@@ -1,30 +1,34 @@
 /**
-*    File        : frontend/js/controllers/studentsSubjectsController.js
-*    Project     : CRUD PHP
-*    Author      : Tecnologías Informáticas B - Facultad de Ingeniería - UNMdP
-*    License     : http://www.gnu.org/licenses/gpl.txt  GNU GPL 3.0
-*    Date        : Mayo 2025
-*    Status      : Prototype
-*    Iteration   : 3.0 ( prototype )
-*/
+ * Controlador para gestionar la relación entre estudiantes y materias (inscripciones).
+ * Permite:
+ * - Asignar materias a estudiantes
+ * - Marcar materias como aprobadas
+ * - Listar/editar/eliminar relaciones existentes
+ * 
+ * Dependencias:
+ * - studentsAPI.js: Maneja datos de estudiantes
+ * - subjectsAPI.js: Maneja datos de materias
+ * - studentsSubjectsAPI.js: Maneja la relación estudiante-materia
+ */
 
-import { studentsAPI } from '../api/studentsAPI.js';
-import { subjectsAPI } from '../api/subjectsAPI.js';
-import { studentsSubjectsAPI } from '../api/studentsSubjectsAPI.js';
-
+// Inicialización al cargar el DOM
 document.addEventListener('DOMContentLoaded', () => 
 {
-    initSelects();
-    setupFormHandler();
-    setupCancelHandler();
-    loadRelations();
+    initSelects();       // Carga selects de estudiantes/materias
+    setupFormHandler();  // Configura el formulario
+    setupCancelHandler();// Botón cancelar
+    loadRelations();     // Carga relaciones existentes
 });
 
+/**
+ * Inicializa los dropdowns de estudiantes y materias con datos del backend.
+ * Usa studentsAPI y subjectsAPI para obtener los datos.
+ */
 async function initSelects() 
 {
     try 
     {
-        // Cargar estudiantes
+        // Carga estudiantes y llena el select
         const students = await studentsAPI.fetchAll();
         const studentSelect = document.getElementById('studentIdSelect');
         students.forEach(s => 
@@ -35,7 +39,7 @@ async function initSelects()
             studentSelect.appendChild(option);
         });
 
-        // Cargar materias
+        // Carga materias y llena el select
         const subjects = await subjectsAPI.fetchAll();
         const subjectSelect = document.getElementById('subjectIdSelect');
         subjects.forEach(sub => 
@@ -52,17 +56,21 @@ async function initSelects()
     }
 }
 
+/**
+ * Configura el manejador del formulario para crear/actualizar relaciones.
+ * Detecta si es una edición (cuando hay ID) o creación nueva.
+ */
 function setupFormHandler() 
 {
     const form = document.getElementById('relationForm');
     form.addEventListener('submit', async e => 
     {
         e.preventDefault();
-
-        const relation = getFormData();
+        const relation = getFormData(); // Obtiene datos del formulario
 
         try 
         {
+            // Decide si es update o create basado en la presencia de ID
             if (relation.id) 
             {
                 await studentsSubjectsAPI.update(relation);
@@ -71,8 +79,8 @@ function setupFormHandler()
             {
                 await studentsSubjectsAPI.create(relation);
             }
-            clearForm();
-            loadRelations();
+            clearForm();    // Limpia el formulario
+            loadRelations(); // Recarga la tabla
         } 
         catch (err) 
         {
@@ -81,6 +89,10 @@ function setupFormHandler()
     });
 }
 
+/**
+ * Configura el botón de cancelar para limpiar el ID de relación
+ * (reinicia el formulario para modo creación).
+ */
 function setupCancelHandler()
 {
     const cancelBtn = document.getElementById('cancelBtn');
@@ -90,40 +102,46 @@ function setupCancelHandler()
     });
 }
 
+/**
+ * Obtiene los datos del formulario y los estructura como objeto.
+ * @returns {Object} { id, student_id, subject_id, approved }
+ */
 function getFormData() 
 {
     return{
         id: document.getElementById('relationId').value.trim(),
         student_id: document.getElementById('studentIdSelect').value,
         subject_id: document.getElementById('subjectIdSelect').value,
-        approved: document.getElementById('approved').checked ? 1 : 0
+        approved: document.getElementById('approved').checked ? 1 : 0 // Convierte checkbox a 1/0
     };
 }
 
+/**
+ * Limpia el formulario y resetea el ID de relación.
+ */
 function clearForm() 
 {
     document.getElementById('relationForm').reset();
     document.getElementById('relationId').value = '';
 }
 
+/**
+ * Carga todas las relaciones estudiante-materia desde el backend.
+ * Nota: Convierte el campo 'approved' de string a número para manejo consistente.
+ */
 async function loadRelations() 
 {
     try 
     {
         const relations = await studentsSubjectsAPI.fetchAll();
         
-        /**
-         * DEBUG
-         */
+        // DEBUG (comentado)
         //console.log(relations);
 
         /**
-         * En JavaScript: Cualquier string que no esté vacío ("") es considerado truthy.
-         * Entonces "0" (que es el valor que llega desde el backend) es truthy,
-         * ¡aunque conceptualmente sea falso! por eso: 
-         * Se necesita convertir ese string "0" a un número real 
-         * o asegurarte de comparar el valor exactamente. 
-         * Con el siguiente código se convierten todos los string approved a enteros.
+         * Soluciona inconsistencia con valores truthy/falsy:
+         * Convierte 'approved' (string) a número para evitar 
+         * que "0" sea evaluado como truthy.
          */
         relations.forEach(rel => 
         {
@@ -138,24 +156,35 @@ async function loadRelations()
     }
 }
 
+/**
+ * Renderiza la tabla de relaciones estudiante-materia.
+ * @param {Array} relations - Lista de relaciones con formato:
+ *        [{ id, student_id, student_fullname, subject_id, subject_name, approved }]
+ */
 function renderRelationsTable(relations) 
 {
     const tbody = document.getElementById('relationTableBody');
-    tbody.replaceChildren();
+    tbody.replaceChildren(); // Limpia la tabla
 
     relations.forEach(rel => 
     {
         const tr = document.createElement('tr');
 
+        // Columnas: Estudiante, Materia, Estado, Acciones
         tr.appendChild(createCell(rel.student_fullname));
         tr.appendChild(createCell(rel.subject_name));
-        tr.appendChild(createCell(rel.approved ? 'Sí' : 'No'));
+        tr.appendChild(createCell(rel.approved ? 'Sí' : 'No')); // Mapea 1/0 a "Sí"/"No"
         tr.appendChild(createActionsCell(rel));
 
         tbody.appendChild(tr);
     });
 }
 
+/**
+ * Crea una celda de tabla estándar.
+ * @param {string} text - Contenido de la celda
+ * @returns {HTMLElement} TD creado
+ */
 function createCell(text) 
 {
     const td = document.createElement('td');
@@ -163,15 +192,22 @@ function createCell(text)
     return td;
 }
 
+/**
+ * Crea celda con botones de acciones (editar/borrar).
+ * @param {Object} relation - Relación a editar/borrar
+ * @returns {HTMLElement} TD con botones
+ */
 function createActionsCell(relation) 
 {
     const td = document.createElement('td');
 
+    // Botón Editar
     const editBtn = document.createElement('button');
     editBtn.textContent = 'Editar';
     editBtn.className = 'w3-button w3-blue w3-small';
     editBtn.addEventListener('click', () => fillForm(relation));
 
+    // Botón Borrar
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Borrar';
     deleteBtn.className = 'w3-button w3-red w3-small w3-margin-left';
@@ -182,14 +218,22 @@ function createActionsCell(relation)
     return td;
 }
 
+/**
+ * Rellena el formulario con los datos de una relación existente para edición.
+ * @param {Object} relation - Relación con { id, student_id, subject_id, approved }
+ */
 function fillForm(relation) 
 {
     document.getElementById('relationId').value = relation.id;
     document.getElementById('studentIdSelect').value = relation.student_id;
     document.getElementById('subjectIdSelect').value = relation.subject_id;
-    document.getElementById('approved').checked = !!relation.approved;
+    document.getElementById('approved').checked = !!relation.approved; // Fuerza booleano
 }
 
+/**
+ * Confirma y ejecuta el borrado de una relación.
+ * @param {string} id - ID de la relación a borrar
+ */
 async function confirmDelete(id) 
 {
     if (!confirm('¿Estás seguro que deseas borrar esta inscripción?')) return;
@@ -197,7 +241,7 @@ async function confirmDelete(id)
     try 
     {
         await studentsSubjectsAPI.remove(id);
-        loadRelations();
+        loadRelations(); // Recarga la tabla después de borrar
     } 
     catch (err) 
     {

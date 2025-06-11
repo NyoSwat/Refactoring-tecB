@@ -1,16 +1,28 @@
 <?php
 /**
-*    File        : backend/controllers/studentsController.php
-*    Project     : CRUD PHP
-*    Author      : Tecnologías Informáticas B - Facultad de Ingeniería - UNMdP
-*    License     : http://www.gnu.org/licenses/gpl.txt  GNU GPL 3.0
-*    Date        : Mayo 2025
-*    Status      : Prototype
-*    Iteration   : 3.0 ( prototype )
-*/
+ * Controlador para gestionar las operaciones CRUD de estudiantes.
+ * Maneja las peticiones HTTP y coordina con el modelo students.php.
+ * 
+ * Funcionalidades principales:
+ * - Procesamiento de solicitudes GET, POST, PUT, DELETE
+ * - Validación básica de datos
+ * - Comunicación con el modelo de estudiantes
+ * - Formateo de respuestas JSON
+ * 
+ * Dependencias:
+ * - models/students.php (contiene la lógica de acceso a datos)
+ */
 
 require_once("./models/students.php");
 
+/**
+ * Maneja las solicitudes GET para estudiantes.
+ * @param mysqli $conn Conexión a la base de datos
+ * 
+ * Comportamiento:
+ * - Con parámetro 'id': Devuelve un estudiante específico
+ * - Sin parámetro: Devuelve todos los estudiantes
+ */
 function handleGet($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
@@ -27,6 +39,14 @@ function handleGet($conn)
     }
 }
 
+/**
+ * Maneja las solicitudes POST para crear nuevos estudiantes.
+ * @param mysqli $conn Conexión a la base de datos
+ * 
+ * Requiere:
+ * - fullname, email y age en el cuerpo de la solicitud
+ * - Valida el resultado de la operación en la base de datos
+ */
 function handlePost($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
@@ -43,6 +63,14 @@ function handlePost($conn)
     }
 }
 
+/**
+ * Maneja las solicitudes PUT para actualizar estudiantes existentes.
+ * @param mysqli $conn Conexión a la base de datos
+ * 
+ * Requiere:
+ * - id, fullname, email y age en el cuerpo de la solicitud
+ * - Verifica que se haya realizado la actualización
+ */
 function handlePut($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
@@ -59,6 +87,14 @@ function handlePut($conn)
     }
 }
 
+/**
+ * Maneja las solicitudes DELETE para eliminar estudiantes.
+ * @param mysqli $conn Conexión a la base de datos
+ * 
+ * Requiere:
+ * - id del estudiante a eliminar
+ * - Confirma que se haya realizado la eliminación
+ */
 function handleDelete($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);

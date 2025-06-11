@@ -8,15 +8,29 @@
 *    Iteration   : 3.0 ( prototype )
 */
 
-import { subjectsAPI } from '../api/subjectsAPI.js';
+/**
+ * Controlador principal para la gestión de materias (CRUD).
+ * Se encarga de:
+ * - Cargar y mostrar la lista de materias.
+ * - Manejar el formulario para crear/editar materias.
+ * - Gestionar las acciones de edición y borrado.
+ * 
+ * Dependencias:
+ * - subjectsAPI.js: Módulo que realiza las llamadas HTTP al backend.
+ */
 
 document.addEventListener('DOMContentLoaded', () => 
 {
+    // Inicialización: Carga las materias y configura los event handlers al cargar el DOM
     loadSubjects();
     setupSubjectFormHandler();
     setupCancelHandler();
 });
 
+/**
+ * Configura el event handler para el formulario de materias.
+ * Maneja tanto la creación como la actualización de materias.
+ */
 function setupSubjectFormHandler() 
 {
   const form = document.getElementById('subjectForm');
@@ -31,6 +45,7 @@ function setupSubjectFormHandler()
 
         try 
         {
+            // Si hay ID, es una actualización; si no, es una creación
             if (subject.id) 
             {
                 await subjectsAPI.update(subject);
@@ -40,6 +55,7 @@ function setupSubjectFormHandler()
                 await subjectsAPI.create(subject);
             }
             
+            // Limpia el formulario y recarga la lista
             form.reset();
             document.getElementById('subjectId').value = '';
             loadSubjects();
@@ -51,6 +67,10 @@ function setupSubjectFormHandler()
   });
 }
 
+/**
+ * Configura el botón de cancelar para limpiar el ID de materia
+ * (útil cuando se cancela una edición).
+ */
 function setupCancelHandler()
 {
     const cancelBtn = document.getElementById('cancelBtn');
@@ -60,6 +80,9 @@ function setupCancelHandler()
     });
 }
 
+/**
+ * Carga todas las materias desde el backend y las renderiza en la tabla.
+ */
 async function loadSubjects()
 {
     try
@@ -73,22 +96,29 @@ async function loadSubjects()
     }
 }
 
+/**
+ * Renderiza la lista de materias en la tabla HTML.
+ * @param {Array} subjects - Lista de materias a mostrar.
+ */
 function renderSubjectTable(subjects)
 {
     const tbody = document.getElementById('subjectTableBody');
-    tbody.replaceChildren();
+    tbody.replaceChildren(); // Limpia la tabla antes de renderizar
 
     subjects.forEach(subject =>
     {
         const tr = document.createElement('tr');
-
-        tr.appendChild(createCell(subject.name));
-        tr.appendChild(createSubjectActionsCell(subject));
-
+        tr.appendChild(createCell(subject.name)); // Celda con el nombre
+        tr.appendChild(createSubjectActionsCell(subject)); // Celda con botones de acciones
         tbody.appendChild(tr);
     });
 }
 
+/**
+ * Crea una celda de tabla (<td>) con texto.
+ * @param {string} text - Contenido de la celda.
+ * @returns {HTMLElement} Elemento <td> creado.
+ */
 function createCell(text)
 {
     const td = document.createElement('td');
@@ -96,19 +126,27 @@ function createCell(text)
     return td;
 }
 
+/**
+ * Crea una celda de acciones (editar/borrar) para una materia.
+ * @param {Object} subject - Objeto materia con {id, name}.
+ * @returns {HTMLElement} Celda con botones de acciones.
+ */
 function createSubjectActionsCell(subject)
 {
     const td = document.createElement('td');
 
+    // Botón Editar
     const editBtn = document.createElement('button');
     editBtn.textContent = 'Editar';
     editBtn.className = 'w3-button w3-blue w3-small';
     editBtn.addEventListener('click', () => 
     {
+        // Rellena el formulario con los datos de la materia seleccionada
         document.getElementById('subjectId').value = subject.id;
         document.getElementById('name').value = subject.name;
     });
 
+    // Botón Borrar
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Borrar';
     deleteBtn.className = 'w3-button w3-red w3-small w3-margin-left';
@@ -119,6 +157,10 @@ function createSubjectActionsCell(subject)
     return td;
 }
 
+/**
+ * Confirma y ejecuta el borrado de una materia.
+ * @param {string} id - ID de la materia a borrar.
+ */
 async function confirmDeleteSubject(id)
 {
     if (!confirm('¿Seguro que deseas borrar esta materia?')) return;
@@ -126,7 +168,7 @@ async function confirmDeleteSubject(id)
     try
     {
         await subjectsAPI.remove(id);
-        loadSubjects();
+        loadSubjects(); // Recarga la lista después de borrar
     }
     catch (err)
     {

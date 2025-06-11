@@ -1,22 +1,46 @@
 <?php
 /**
-*    File        : backend/controllers/studentsSubjectsController.php
-*    Project     : CRUD PHP
-*    Author      : Tecnologías Informáticas B - Facultad de Ingeniería - UNMdP
-*    License     : http://www.gnu.org/licenses/gpl.txt  GNU GPL 3.0
-*    Date        : Mayo 2025
-*    Status      : Prototype
-*    Iteration   : 3.0 ( prototype )
-*/
+ * Controlador para gestionar las relaciones entre estudiantes y materias.
+ * Maneja las operaciones CRUD para la tabla de asociación students_subjects.
+ * 
+ * Responsabilidades principales:
+ * - Procesar peticiones HTTP (GET, POST, PUT, DELETE)
+ * - Validar datos básicos de entrada
+ * - Gestionar respuestas JSON al frontend
+ * - Manejo básico de errores HTTP
+ * 
+ * Dependencias:
+ * - studentsSubjects.php (modelo)
+ */
 
 require_once("./models/studentsSubjects.php");
 
+/**
+ * Maneja solicitudes GET para obtener relaciones estudiante-materia.
+ * @param mysqli $conn Conexión a la base de datos
+ * 
+ * Respuesta:
+ * - JSON con todas las relaciones existentes
+ * - Estructura: [{id, student_id, subject_id, approved, student_fullname, subject_name}]
+ */
 function handleGet($conn) 
 {
     $studentsSubjects = getAllSubjectsStudents($conn);
     echo json_encode($studentsSubjects);
 }
 
+/**
+ * Maneja solicitudes POST para crear nuevas relaciones.
+ * @param mysqli $conn Conexión a la base de datos
+ * 
+ * Valida:
+ * - Campos requeridos (student_id, subject_id, approved)
+ * - Resultado de la operación en BD
+ * 
+ * Respuestas posibles:
+ * - 200: Asignación exitosa
+ * - 500: Error en el servidor
+ */
 function handlePost($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
@@ -33,6 +57,19 @@ function handlePost($conn)
     }
 }
 
+/**
+ * Maneja solicitudes PUT para actualizar relaciones existentes.
+ * @param mysqli $conn Conexión a la base de datos
+ * 
+ * Valida:
+ * - Campos obligatorios (id, student_id, subject_id, approved)
+ * - Existencia del registro a modificar
+ * 
+ * Respuestas posibles:
+ * - 200: Actualización exitosa
+ * - 400: Datos incompletos
+ * - 500: Error en el servidor
+ */
 function handlePut($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
@@ -56,6 +93,18 @@ function handlePut($conn)
     }
 }
 
+/**
+ * Maneja solicitudes DELETE para eliminar relaciones.
+ * @param mysqli $conn Conexión a la base de datos
+ * 
+ * Valida:
+ * - Campo id en la solicitud
+ * - Existencia del registro
+ * 
+ * Respuestas posibles:
+ * - 200: Eliminación exitosa
+ * - 500: Error en el servidor
+ */
 function handleDelete($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
