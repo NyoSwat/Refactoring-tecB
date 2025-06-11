@@ -18,7 +18,10 @@
  * Dependencias:
  * - studentsAPI.js: Módulo para interactuar con el backend
  */
+
 import { subjectsAPI } from '../api/subjectsAPI.js';
+import { subjectsAPI } from '../api/subjectsAPI.js';
+
 // Inicialización cuando el DOM está cargado
 document.addEventListener('DOMContentLoaded', () => 
 {

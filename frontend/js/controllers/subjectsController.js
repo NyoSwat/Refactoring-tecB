@@ -18,7 +18,7 @@
  * Dependencias:
  * - subjectsAPI.js: Módulo que realiza las llamadas HTTP al backend.
  */
-import { studentsAPI } from '../api/studentsAPI.js';
+import { subjectsAPI } from '../api/subjectsAPI.js';
 document.addEventListener('DOMContentLoaded', () => 
 {
     // Inicialización: Carga las materias y configura los event handlers al cargar el DOM
